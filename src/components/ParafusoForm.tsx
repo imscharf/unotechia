@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Wrench } from 'lucide-react';
 import { Parafuso } from '../types';
 
 interface ParafusoFormProps {
