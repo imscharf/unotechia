@@ -28,6 +28,6 @@
     }
   ],
   "env": {
-    "MONGO_URI": "@unotechia_mongo_uri"
+    "MONGO_URI": "MONGO_URI"
   }
 }
