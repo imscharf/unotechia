@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Wrench, Brain, Search } from 'lucide-react';
+// src/App.tsx
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Wrench, Brain, Search, Loader, AlertCircle } from 'lucide-react';
 import { Modal } from './components/Modal';
 import { ParafusoForm } from './components/ParafusoForm';
 import { AnaliseForm } from './components/AnaliseForm';
 import { ResultadosTabela } from './components/ResultadosTabela';
 import { Parafuso, AnaliseCorrosao, ResultadoAnalise } from './types';
+
+// Assuma que a API está no mesmo domínio, sob /api
+// Em ambiente de desenvolvimento, você pode precisar usar uma URL completa como "http://localhost:5000/api"
+const API_BASE_URL = '/api'; 
 
 function App() {
   const [parafusos, setParafusos] = useState<Parafuso[]>([]);
@@ -14,9 +19,50 @@ function App() {
   
   const [showParafusoModal, setShowParafusoModal] = useState(false);
   const [showAnaliseModal, setShowAnaliseModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Função para gerar ID único
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  // Função para buscar parafusos do back-end
+  const fetchParafusos = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/parafusos`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: Parafuso[] = await response.json();
+      setParafusos(data);
+    } catch (e) {
+      console.error("Erro ao buscar parafusos:", e);
+      setError("Não foi possível carregar os parafusos.");
+    }
+  }, []); // Dependências vazias, pois só precisamos que ela seja criada uma vez
+
+  // Função para buscar análises do back-end
+  const fetchAnalises = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/analises`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: AnaliseCorrosao[] = await response.json();
+      setAnalises(data);
+    } catch (e) {
+      console.error("Erro ao buscar análises:", e);
+      setError("Não foi possível carregar as análises.");
+    }
+  }, []); // Dependências vazias
+
+  // Carregar dados na montagem do componente
+  useEffect(() => {
+    setLoading(true);
+    setError(null); // Limpa erros anteriores
+    const loadData = async () => {
+      await Promise.all([fetchParafusos(), fetchAnalises()]); // Busca ambos em paralelo
+      setLoading(false);
+    };
+    loadData();
+  }, [fetchParafusos, fetchAnalises]);
+
 
   // Atualizar resultados quando parafusos ou análises mudarem
   useEffect(() => {
@@ -36,32 +82,89 @@ function App() {
     setResultados(novosResultados);
   }, [parafusos, analises]);
 
-  const handleAddParafuso = (novoParafuso: Omit<Parafuso, 'id' | 'dataRegistro'>) => {
-    const parafuso: Parafuso = {
-      ...novoParafuso,
-      id: generateId(),
-      dataRegistro: new Date().toISOString()
-    };
-    
-    setParafusos(prev => [...prev, parafuso]);
-    setShowParafusoModal(false);
+  // Função para adicionar parafuso via API
+  const handleAddParafuso = async (novoParafusoData: Omit<Parafuso, 'id' | 'dataRegistro'>) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/parafusos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(novoParafusoData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`HTTP error! status: ${response.status} - ${errorData.error || response.statusText}`);
+      }
+      const addedParafuso: Parafuso = await response.json();
+      setParafusos(prev => [...prev, addedParafuso]);
+      setShowParafusoModal(false);
+    } catch (e: any) {
+      console.error("Erro ao adicionar parafuso:", e);
+      alert(`Erro ao registrar parafuso: ${e.message}. Verifique a conexão com a API.`);
+    }
   };
 
-  const handleAddAnalise = (novaAnalise: Omit<AnaliseCorrosao, 'id' | 'dataAnalise'>) => {
-    const analise: AnaliseCorrosao = {
-      ...novaAnalise,
-      id: generateId(),
-      dataAnalise: new Date().toISOString()
-    };
-    
-    setAnalises(prev => [...prev, analise]);
-    setShowAnaliseModal(false);
+  // Função para adicionar análise via API (agora incluindo o arquivo de imagem)
+  const handleAddAnalise = async (novaAnaliseData: Omit<AnaliseCorrosao, 'id' | 'dataAnalise' | 'percentualAfetado'>, imageFile: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('parafusoId', novaAnaliseData.parafusoId);
+      formData.append('observacoes', novaAnaliseData.observacoes);
+      formData.append('responsavel', novaAnaliseData.responsavel);
+
+      const response = await fetch(`${API_BASE_URL}/analyze`, {
+        method: 'POST',
+        body: formData, // FormData não precisa de 'Content-Type' header, o browser cuida disso
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`HTTP error! status: ${response.status} - ${errorData.error || response.statusText}`);
+      }
+      const addedAnalise: AnaliseCorrosao = await response.json();
+      setAnalises(prev => [...prev, addedAnalise]); // Adiciona a nova análise à lista local
+      setShowAnaliseModal(false);
+    } catch (e: any) {
+      console.error("Erro ao adicionar análise:", e);
+      alert(`Erro ao realizar análise com IA: ${e.message}. Verifique o console para mais detalhes.`);
+      throw e; // Propaga o erro para que o AnaliseForm possa tratá-lo no finally
+    }
   };
+
 
   // Filtrar resultados baseado no termo de busca
   const resultadosFiltrados = resultados.filter(resultado =>
     resultado.codigo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader className="w-10 h-10 animate-spin text-blue-600" />
+        <span className="ml-3 text-lg text-gray-700">Carregando dados...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 text-red-800 p-4 rounded-lg shadow-md m-4">
+        <AlertCircle className="w-8 h-8 mr-2 mb-3" />
+        <p className="text-xl font-semibold mb-2">Ops! Ocorreu um erro.</p>
+        <span className="text-gray-700">{error}</span>
+        <button 
+          onClick={() => { setError(null); setLoading(true); Promise.all([fetchParafusos(), fetchAnalises()]); }} 
+          className="mt-6 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center"
+        >
+          <Loader className="w-4 h-4 mr-2" />
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -169,7 +272,7 @@ function App() {
       >
         <AnaliseForm
           parafusos={parafusos}
-          onSubmit={handleAddAnalise}
+          onSubmit={handleAddAnalise} // Passa a nova função handleAddAnalise
           onCancel={() => setShowAnaliseModal(false)}
         />
       </Modal>

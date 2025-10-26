@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+// src/components/AnaliseForm.tsx
+import { useState } from 'react';
 import { AnaliseCorrosao, Parafuso } from '../types';
-import { Brain, Loader } from 'lucide-react';
+import { Brain, Loader, FileImage } from 'lucide-react'; // Adicionado FileImage para o ícone do upload
 
 interface AnaliseFormProps {
   parafusos: Parafuso[];
-  onSubmit: (analise: Omit<AnaliseCorrosao, 'id' | 'dataAnalise'>) => void;
+  // O onSubmit agora espera o File da imagem
+  onSubmit: (analise: Omit<AnaliseCorrosao, 'id' | 'dataAnalise' | 'percentualAfetado'>, imageFile: File) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -14,35 +16,37 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
     observacoes: '',
     responsavel: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null); // Novo estado para a imagem
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFileError(null); // Limpa erros de arquivo anteriores
+
+    if (!imageFile) {
+      setFileError('Por favor, selecione uma imagem para análise.');
+      return;
+    }
+
+    // Verifica se os campos obrigatórios estão preenchidos antes de iniciar a análise
+    if (!formData.parafusoId || !formData.responsavel) {
+        alert('Por favor, preencha todos os campos obrigatórios (Parafuso e Responsável).');
+        return;
+    }
+
     setIsAnalyzing(true);
 
     try {
-      // Simular chamada para a IA (substitua pela sua implementação real)
-      const percentualAfetado = await chamarIA(formData.parafusoId);
-      
-      onSubmit({
-        ...formData,
-        percentualAfetado
-      });
+      // Chama o onSubmit do App.tsx, passando os dados do formulário e o arquivo de imagem
+      await onSubmit(formData, imageFile);
+      // O onSubmit no App.tsx já cuida de fechar o modal e atualizar os dados
     } catch (error) {
       console.error('Erro ao analisar com IA:', error);
-      alert('Erro ao processar análise com IA. Tente novamente.');
+      // O erro já é alertado no App.tsx, mas podemos adicionar um feedback aqui também se necessário
     } finally {
       setIsAnalyzing(false);
     }
-  };
-
-  // Função simulada da IA - substitua pela sua implementação real
-  const chamarIA = async (parafusoId: string): Promise<number> => {
-    // Simular delay da IA
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simular resultado da IA (0-100%)
-    return Math.round(Math.random() * 100 * 100) / 100;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -51,6 +55,23 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // Validação básica do tipo de arquivo
+      if (file.type.startsWith('image/')) {
+        setImageFile(file);
+        setFileError(null); // Limpa o erro se um arquivo válido for selecionado
+      } else {
+        setImageFile(null);
+        setFileError('Por favor, selecione um arquivo de imagem válido (JPG, PNG, GIF).');
+      }
+    } else {
+      setImageFile(null);
+      setFileError('Nenhum arquivo selecionado.');
+    }
   };
 
   const parafusoSelecionado = parafusos.find(p => p.id === formData.parafusoId);
@@ -63,7 +84,7 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
           <h3 className="text-sm font-medium text-blue-900">Análise com IA</h3>
         </div>
         <p className="text-sm text-blue-700">
-          Nossa IA analisará automaticamente a corrosão na cabeça do parafuso e calculará o percentual afetado.
+          Carregue uma imagem da cabeça do parafuso para nossa IA analisar automaticamente o percentual de corrosão.
         </p>
       </div>
 
@@ -106,6 +127,47 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
             </div>
           </div>
         )}
+
+        {/* Campo de Upload de Imagem */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Carregar Imagem do Parafuso *
+          </label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <div className="space-y-1 text-center">
+              <FileImage className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                >
+                  <span>Faça o upload de um arquivo</span>
+                  <input
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    className="sr-only"
+                    onChange={handleFileChange}
+                    disabled={isAnalyzing}
+                    accept="image/*" // Aceita apenas arquivos de imagem
+                  />
+                </label>
+                <p className="pl-1">ou arraste e solte</p>
+              </div>
+              <p className="text-xs text-gray-500">
+                PNG, JPG, GIF até 10MB
+              </p>
+              {imageFile && (
+                <p className="text-sm text-gray-800 mt-2">
+                  Arquivo selecionado: <span className="font-medium">{imageFile.name}</span>
+                </p>
+              )}
+              {fileError && (
+                <p className="text-sm text-red-600 mt-2">{fileError}</p>
+              )}
+            </div>
+          </div>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -150,7 +212,7 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
         </button>
         <button
           type="submit"
-          disabled={isAnalyzing || !formData.parafusoId || !formData.responsavel}
+          disabled={isAnalyzing || !formData.parafusoId || !formData.responsavel || !imageFile}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-2"
         >
           {isAnalyzing ? (
