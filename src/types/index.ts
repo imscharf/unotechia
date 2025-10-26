@@ -1,11 +1,6 @@
 export interface Parafuso {
   id: string;
   codigo: string;
-  tipo: string;
-  cor: string;
-  material: string;
-  diametro: number;
-  comprimento: number;
   dataRegistro: string;
 }
 

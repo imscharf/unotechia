@@ -113,18 +113,13 @@ export function ResultadosTabela({ resultados, analises }: ResultadosTabelaProps
                       <div className="text-sm font-medium text-gray-900">
                         {resultado.codigo}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {resultado.tipo}
-                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      <div>{resultado.material}</div>
                       <div className="text-gray-500">
-                        Ø{resultado.diametro}mm × {resultado.comprimento}mm
+                        Registrado em: {new Date(resultado.dataRegistro).toLocaleDateString('pt-BR')}
                       </div>
-                      <div className="text-gray-500">Cor: {resultado.cor}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

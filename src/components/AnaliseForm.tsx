@@ -83,7 +83,7 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
             <option value="">Selecione um parafuso</option>
             {parafusos.map(parafuso => (
               <option key={parafuso.id} value={parafuso.id}>
-                {parafuso.codigo} - {parafuso.tipo} ({parafuso.material})
+                {parafuso.codigo}
               </option>
             ))}
           </select>
@@ -98,16 +98,10 @@ export function AnaliseForm({ parafusos, onSubmit, onCancel }: AnaliseFormProps)
                 <span className="ml-2 font-medium">{parafusoSelecionado.codigo}</span>
               </div>
               <div>
-                <span className="text-gray-500">Tipo:</span>
-                <span className="ml-2 font-medium">{parafusoSelecionado.tipo}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Material:</span>
-                <span className="ml-2 font-medium">{parafusoSelecionado.material}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Dimensões:</span>
-                <span className="ml-2 font-medium">Ø{parafusoSelecionado.diametro}mm × {parafusoSelecionado.comprimento}mm</span>
+                <span className="text-gray-500">Registrado em:</span>
+                <span className="ml-2 font-medium">
+                  {new Date(parafusoSelecionado.dataRegistro).toLocaleDateString('pt-BR')}
+                </span>
               </div>
             </div>
           </div>
