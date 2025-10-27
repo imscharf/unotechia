@@ -10,7 +10,6 @@
     }
   ],
   "routes": [
-    // Rota para o seu API Gateway (ajuste o URL conforme sua infra AWS)
     {
       "src": "/api/(.*)",
       "dest": "https://epeyqjzu6c.execute-api.sa-east-1.amazonaws.com/Dev"
