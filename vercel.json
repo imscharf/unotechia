@@ -12,7 +12,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://epeyqjzu6c.execute-api.sa-east-1.amazonaws.com/Dev"
+      "dest": "https://epeyqjzu6c.execute-api.sa-east-1.amazonaws.com/Dev/$1"
     },
     {
       "src": "/(.*)",
