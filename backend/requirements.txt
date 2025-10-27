@@ -1,6 +1,0 @@
-Flask
-Flask-Cors
-pymongo
-opencv-python
-numpy
-python-dotenv # Para carregar variáveis de ambiente localmente (opcional)
