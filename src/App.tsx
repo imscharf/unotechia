@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Wrench, Brain, Search } from 'lucide-react';
 import { Modal } from './components/Modal';
 import { ParafusoForm } from './components/ParafusoForm';
