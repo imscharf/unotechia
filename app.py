@@ -9,7 +9,7 @@ import traceback # Importar para obter o stack trace de erros
 
 app = FastAPI()
 
-@app.post("/analyze-corrosion/")
+@app.post("/api/analyze-corrosion/")
 async def analyze_corrosion(file: UploadFile = File(...)):
     if not file.content_type.startswith('image/'):
         print("Erro: O arquivo enviado não é uma imagem.") # Log
@@ -18,12 +18,18 @@ async def analyze_corrosion(file: UploadFile = File(...)):
     try:
         # Ler a imagem diretamente do stream
         contents = await file.read()
+        print(f"Conteúdo do arquivo recebido. Tamanho: {len(contents)} bytes.") # ADDED LOG
         np_img = np.frombuffer(contents, np.uint8)
+        print("Attempting to decode image with cv.imdecode...")
         img = cv.imdecode(np_img, cv.IMREAD_COLOR)
+        print(f"Resultado de cv.imdecode: {type(img)}") # ADDED LOG
 
         if img is None:
-            print("Erro: Não foi possível decodificar a imagem.") # Log
+            print("Erro: cv.imdecode retornou None. Não foi possível decodificar a imagem.") # Modified Log
             raise HTTPException(status_code=400, detail="Não foi possível decodificar a imagem.")
+
+        # ADDED LOG to confirm image properties
+        print(f"Imagem decodificada com sucesso. Dimensões: {img.shape}, Tipo de dados: {img.dtype}")
 
         # --- SEU CÓDIGO DE ANÁLISE DE CORROSÃO A PARTIR DAQUI ---
         print("Imagem decodificada com sucesso. Iniciando análise...") # Log
