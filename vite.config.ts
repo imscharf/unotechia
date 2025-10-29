@@ -1,3 +1,4 @@
+// vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -7,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://epeyqjzu6c.execute-api.sa-east-1.amazonaws.com/Dev',
+        target: 'http://127.0.0.1:8000', // <<<<<< AQUI!
         changeOrigin: true,
         secure: false,
       },

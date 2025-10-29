@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ResultadoAnalise, AnaliseCorrosao } from '../types';
-import { AlertCircle, Brain, ChevronDown, ChevronRight, Calendar, User } from 'lucide-react';
+import { ResultadoAnalise, AnaliseCorrosao, DetalhesCorrosao } from '../types';
+import { AlertCircle, Brain, ChevronDown, ChevronRight, Calendar, User, Info } from 'lucide-react';
 
 interface ResultadosTabelaProps {
   resultados: ResultadoAnalise[];
@@ -71,13 +71,13 @@ export function ResultadosTabela({ resultados, analises }: ResultadosTabelaProps
               Parafuso
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Especificações
+              Registrado Em
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Última Análise
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              % Corrosão (Cabeça)
+              % Corrosão Total
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Total Análises
@@ -118,7 +118,7 @@ export function ResultadosTabela({ resultados, analises }: ResultadosTabelaProps
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       <div className="text-gray-500">
-                        Registrado em: {new Date(resultado.dataRegistro).toLocaleDateString('pt-BR')}
+                        {new Date(resultado.dataRegistro).toLocaleDateString('pt-BR')}
                       </div>
                     </div>
                   </td>
@@ -161,7 +161,7 @@ export function ResultadosTabela({ resultados, analises }: ResultadosTabelaProps
                                 Análise #{analisesDoParafuso.length - index}
                               </span>
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPercentualColor(analise.percentualAfetado)}`}>
-                                {analise.percentualAfetado.toFixed(1)}% de corrosão
+                                {analise.percentualAfetado.toFixed(1)}% de corrosão total
                               </span>
                             </div>
                             <div className="text-xs text-gray-500">
@@ -191,6 +191,21 @@ export function ResultadosTabela({ resultados, analises }: ResultadosTabelaProps
                                 <span className="text-gray-600 font-medium">Observações:</span>
                                 <p className="mt-1 text-gray-900">{analise.observacoes}</p>
                               </div>
+                            </div>
+                          )}
+
+                          {analise.detalhesCorrosao && (
+                            <div className="mt-4 pt-3 border-t border-gray-100">
+                                <div className="flex items-center space-x-2 mb-2">
+                                    <Info className="w-4 h-4 text-gray-500" />
+                                    <h5 className="text-sm font-medium text-gray-900">Detalhes da Corrosão por Tipo</h5>
+                                </div>
+                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                                    <li>Corrosão Vermelha: <span className="font-semibold">{analise.detalhesCorrosao.percentual_vermelha.toFixed(1)}%</span></li>
+                                    <li>Corrosão Preta: <span className="font-semibold">{analise.detalhesCorrosao.percentual_preta.toFixed(1)}%</span></li>
+                                    <li>Corrosão Branca: <span className="font-semibold">{analise.detalhesCorrosao.percentual_branca.toFixed(1)}%</span></li>
+                                    <li>Pixels totais do parafuso: <span className="font-semibold">{analise.detalhesCorrosao.total_pixels_parafuso}</span></li>
+                                </ul>
                             </div>
                           )}
                         </div>
