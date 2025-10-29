@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AnaliseCorrosao, Parafuso, DetalhesCorrosao } from '../types'; // Importe DetalhesCorrosao
-import { Brain, Loader } from 'lucide-react';
+import { Brain, Loader, AlertCircle } from 'lucide-react';
 
 interface AnaliseFormProps {
     parafusos: Parafuso[];
