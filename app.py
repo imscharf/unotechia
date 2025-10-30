@@ -120,8 +120,7 @@ async def analyze_corrosion(file: UploadFile = File(...)):
             "percentual_total_afetado": round(percentual_total_afetado, 2),
             "percentual_vermelha": round(percentual_vermelha, 2),
             "percentual_preta": round(percentual_preta, 2),
-            "percentual_branca": round(percentual_branca, 2),
-            "total_pixels_parafuso": total_parafuso
+            "percentual_branca": round(percentual_branca, 2)
         })
 
     except Exception as e:

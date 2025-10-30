@@ -204,7 +204,6 @@ export function ResultadosTabela({ resultados, analises }: ResultadosTabelaProps
                                     <li>Corrosão Vermelha: <span className="font-semibold">{analise.detalhesCorrosao.percentual_vermelha.toFixed(1)}%</span></li>
                                     <li>Corrosão Preta: <span className="font-semibold">{analise.detalhesCorrosao.percentual_preta.toFixed(1)}%</span></li>
                                     <li>Corrosão Branca: <span className="font-semibold">{analise.detalhesCorrosao.percentual_branca.toFixed(1)}%</span></li>
-                                    <li>Pixels totais do parafuso: <span className="font-semibold">{analise.detalhesCorrosao.total_pixels_parafuso}</span></li>
                                 </ul>
                             </div>
                           )}
