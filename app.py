@@ -46,8 +46,8 @@ async def analyze_corrosion(file: UploadFile = File(...)):
         mascara_objeto = cv.bitwise_not(mascara_fundo)
 
         kernel = np.ones((5, 5), np.uint8)
-        mascara_objeto = cv.morphEx(mascara_objeto, cv.MORPH_OPEN, kernel)
-        mascara_objeto = cv.morphEx(mascara_objeto, cv.MORPH_CLOSE, kernel)
+        mascara_objeto = cv.morphologyEx(mascara_objeto, cv.MORPH_OPEN, kernel)
+        mascara_objeto = cv.morphologyEx(mascara_objeto, cv.MORPH_CLOSE, kernel)
         print(f"Mascara de objeto após morfologia. Pixels no objeto: {np.count_nonzero(mascara_objeto)}") # Log
 
 
